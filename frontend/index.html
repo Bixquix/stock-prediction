@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stock Direction Lab</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Stock Direction Lab home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <span class="brand-kicker">ML Ensemble + AI Insight</span>
+            <span class="brand-title">Stock Direction Lab</span>
+          </span>
+        </a>
+        <div class="topbar-actions">
+          <span class="api-pill" id="apiStatus">Checking API</span>
+          <a class="docs-link" href="/docs">API Docs</a>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="control-panel" aria-label="Analysis controls">
+          <form class="stock-form" id="stockForm">
+            <div class="field-group ticker-field">
+              <label for="tickerInput">Ticker</label>
+              <input
+                id="tickerInput"
+                name="ticker"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="AAPL, RELIANCE.NS, BTC-USD"
+                value="AAPL"
+              >
+            </div>
+
+            <fieldset class="segmented" aria-label="AI provider">
+              <legend>AI</legend>
+              <input type="radio" id="providerOpenai" name="provider" value="openai" checked>
+              <label for="providerOpenai">OpenAI</label>
+              <input type="radio" id="providerGemini" name="provider" value="gemini">
+              <label for="providerGemini">Gemini</label>
+            </fieldset>
+
+            <label class="switch">
+              <input type="checkbox" id="forceRetrain">
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Retrain</span>
+            </label>
+
+            <button class="btn btn-primary" type="submit" id="analyzeButton">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 19h16M7 16l4-4 3 3 5-7"></path>
+              </svg>
+              <span>Analyze</span>
+            </button>
+
+            <button class="btn btn-secondary" type="button" id="insightButton" disabled>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 3l1.8 5.1L19 10l-5.2 1.9L12 17l-1.8-5.1L5 10l5.2-1.9L12 3z"></path>
+                <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"></path>
+              </svg>
+              <span>AI Insight</span>
+            </button>
+          </form>
+
+          <div class="ticker-strip" aria-label="Common tickers">
+            <button type="button" data-ticker="AAPL">AAPL</button>
+            <button type="button" data-ticker="MSFT">MSFT</button>
+            <button type="button" data-ticker="TSLA">TSLA</button>
+            <button type="button" data-ticker="RELIANCE.NS">RELIANCE.NS</button>
+            <button type="button" data-ticker="^NSEI">^NSEI</button>
+            <button type="button" data-ticker="BTC-USD">BTC-USD</button>
+          </div>
+        </section>
+
+        <div class="notice" id="notice" role="status" aria-live="polite"></div>
+
+        <section class="status-rail" aria-label="Run status">
+          <span class="status-step" data-step="history">History</span>
+          <span class="status-step" data-step="ensemble">Ensemble</span>
+          <span class="status-step" data-step="insight">Insight</span>
+        </section>
+
+        <section class="metrics-grid" aria-label="Prediction summary">
+          <article class="metric-card direction-card" id="directionCard">
+            <span class="metric-label">Direction</span>
+            <strong id="directionValue">Ready</strong>
+            <span id="directionMeta">Run an analysis</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Last Close</span>
+            <strong id="priceValue">--</strong>
+            <span id="priceMeta">--</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Average UP Probability</span>
+            <strong id="avgUpValue">--</strong>
+            <span id="avgUpMeta">Across 8 models</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Vote Split</span>
+            <strong id="voteValue">--</strong>
+            <span id="voteMeta">UP / DOWN</span>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">Market History</span>
+                <h2 id="chartTitle">Recent Close</h2>
+              </div>
+              <span class="panel-chip" id="chartMeta">180 sessions</span>
+            </div>
+            <div class="chart-wrap" id="priceChart" aria-label="Recent close chart">
+              <div class="empty-state">No chart loaded</div>
+            </div>
+          </article>
+
+          <aside class="insight-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">AI Read</span>
+                <h2>Technical Bias</h2>
+              </div>
+              <span class="panel-chip" id="providerChip">OpenAI</span>
+            </div>
+            <div class="insight-copy" id="insightCopy">
+              <p>Insight appears here after a completed analysis.</p>
+            </div>
+          </aside>
+
+          <article class="model-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">Model Votes</span>
+                <h2>Ensemble Breakdown</h2>
+              </div>
+              <span class="panel-chip" id="cacheChip">Cache pending</span>
+            </div>
+            <div class="model-list" id="modelList">
+              <div class="empty-state">No model output loaded</div>
+            </div>
+          </article>
+
+          <article class="gauge-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">Confidence</span>
+                <h2>UP Probability</h2>
+              </div>
+            </div>
+            <div class="gauge" id="probGauge">
+              <div class="gauge-inner">
+                <strong id="gaugeValue">--</strong>
+                <span>avg up</span>
+              </div>
+            </div>
+            <div class="bias-scale" aria-hidden="true">
+              <span>Bearish</span>
+              <span>Neutral</span>
+              <span>Bullish</span>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
