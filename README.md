@@ -35,7 +35,7 @@ app talking to the FastAPI backend below. This version:
 - Exposes everything through a **FastAPI backend** (JSON API + auto docs
   at `/docs`) so you can build any frontend you want on top of it.
 - Adds a **multi-provider LLM layer** — an abstract `LLMProvider`
-  interface with OpenAI/Anthropic/Gemini implementations, selectable per
+  interface with OpenAI/Gemini implementations, selectable per
   request (`?provider=anthropic`) or via a configured default.
 
 ## Notebooks — generalized research pipeline
@@ -95,7 +95,6 @@ backend/
     └── llm/
         ├── base.py            # LLMProvider interface + prompt builder
         ├── openai_provider.py
-        ├── anthropic_provider.py
         ├── gemini_provider.py
         └── router.py          # picks provider at runtime
 notebooks/                    # generalized research pipeline (any ticker)
